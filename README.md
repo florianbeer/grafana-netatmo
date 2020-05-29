@@ -1,6 +1,8 @@
 # grafana-netatmo
 Netatmo Weather Station dashboard for Grafana
 
+![Screenshot](https://raw.githubusercontent.com/florianbeer/grafana-netatmo/master/screenshot.png)
+
 ## Installation
 
 * Create a [Netatmo developer account](https://dev.netatmo.com/apidocumentation) and fill in your CLIENT_ID, CLIENT_SECRET, USERNAME and PASSWORD in the script.
