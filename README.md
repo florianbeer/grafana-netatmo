@@ -1,6 +1,8 @@
 # grafana-netatmo
 Netatmo Weather Station dashboard for Grafana
 
+https://grafana.com/grafana/dashboards/12378
+
 ![Screenshot](https://raw.githubusercontent.com/florianbeer/grafana-netatmo/master/screenshot.png)
 
 ## Installation
