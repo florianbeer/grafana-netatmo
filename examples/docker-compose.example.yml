@@ -3,7 +3,7 @@ services:
   scraper:
     build:
       context: .
-      dockerfile: Dockerfile-scraper
+      dockerfile: Dockerfile
     image: netatmo_influx:latest
   influx:
     image: influxdb:1.7-alpine
