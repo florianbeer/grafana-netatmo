@@ -14,11 +14,11 @@ services:
     environment:
       - INFLUXDB_REPORTING_DISABLED=true
     ports:
-      - 8087:8086
+      - 8086:8086
   grafana:
     image: grafana/grafana:7.0.3
     ports:
-      - 3001:3000
+      - 3000:3000
     volumes:
       - $PWD/grafana-data:/var/lib/grafana
     networks:
