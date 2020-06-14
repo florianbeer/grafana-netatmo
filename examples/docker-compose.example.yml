@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile-scraper
+    image: netatmo_influx:latest
+  influx:
+    image: influxdb:1.7-alpine
+    networks:
+      - netatmo-scraper
+    volumes:
+      - $PWD/influxdb-data:/var/lib/influxdb
+    environment:
+      - INFLUXDB_REPORTING_DISABLED=true
+    ports:
+      - 8087:8086
+  grafana:
+    image: grafana/grafana:7.0.3
+    ports:
+      - 3001:3000
+    volumes:
+      - $PWD/grafana-data:/var/lib/grafana
+    networks:
+      - netatmo-scraper
+
+networks:
+  netatmo-scraper:
