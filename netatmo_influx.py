@@ -3,11 +3,15 @@
 
 import lnetatmo
 from influxdb import InfluxDBClient
+import os
 
-CLIENT_ID = ''
-CLIENT_SECRET = ''
-USERNAME = ''
-PASSWORD = ''
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
+USERNAME = os.environ['USERNAME']
+PASSWORD = os.environ['PASSWORD']
+INFLUX_HOST = os.environ['INFLUX_HOST']
+INFLUX_PORT = os.environ['INFLUX_PORT']
+
 
 authorization = lnetatmo.ClientAuth(
         clientId=CLIENT_ID,
@@ -19,7 +23,7 @@ authorization = lnetatmo.ClientAuth(
 
 weatherData = lnetatmo.WeatherStationData(authorization)
 
-client = InfluxDBClient()
+client = InfluxDBClient(host=INFLUX_HOST, port=INFLUX_PORT)
 if {'name': 'netatmo'} not in client.get_list_database():
     client.create_database('netatmo')
 
