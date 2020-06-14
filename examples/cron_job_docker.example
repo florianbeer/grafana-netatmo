@@ -1,0 +1,11 @@
+#!/bin/bash
+
+docker run --rm \
+  --network netatmo_netatmo-scraper \
+  -e CLIENT_ID="" \
+  -e CLIENT_SECRET="" \
+  -e USERNAME="" \
+  -e PASSWORD="" \
+  -e INFLUX_HOST="netatmo_influx_1" \
+  -e INFLUX_PORT="8086" \
+  -ti netatmo_influx python netatmo_influx.py
