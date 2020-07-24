@@ -2083,7 +2083,12 @@
               "key": "station",
               "operator": "=~",
               "value": "/^$Station$/"
-            }
+            },
+            {
+              "condition": "AND",
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
           ]
         }
       ],
