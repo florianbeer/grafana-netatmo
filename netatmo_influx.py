@@ -10,7 +10,7 @@ from influxdb import InfluxDBClient
 
 
 def parse_config(config_file=None):
-    _config = configparser.SafeConfigParser(interpolation=None)
+    _config = configparser.ConfigParser(interpolation=None)
 
     if config_file is None:
         config_file = Path('./config')
