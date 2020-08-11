@@ -1,0 +1,30 @@
+version: '2'
+services:
+    grafana-netatmo:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      image: local/grafana-netatmo
+      container_name: grafana-netatmo
+      restart: unless-stopped
+      environment:
+        - NETATMO_CLIENT_ID=
+        - NETATMO_CLIENT_SECRET=
+        - NETATMO_USERNAME=
+        - NETATMO_PASSWORD=
+        - INFLUX_HOST=grafana-influxdb
+        - INFLUX_PORT=8086
+        - INFLUX_DB=
+        - INFLUX_USERNAME=
+        - INFLUX_PASSWORD=
+      networks:
+        - default
+    grafana-influxdb:
+      image: library/influxdb:1.7-alpine
+      container_name: grafana-influxdb
+      restart: unless-stopped
+      environment:
+        - INFLUXDB_DB=grafana
+        - INFLUXDB_HTTP_AUTH_ENABLED=false
+      networks:
+        - default

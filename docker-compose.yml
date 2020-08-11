@@ -1,0 +1,17 @@
+version: '2'
+services:
+    grafana-netatmo:
+      image: karaktaka/grafana-netatmo
+      container_name: grafana-netatmo
+      restart: unless-stopped
+      environment:
+        - NETATMO_CLIENT_ID=
+        - NETATMO_CLIENT_SECRET=
+        - NETATMO_USERNAME=
+        - NETATMO_PASSWORD=
+        - INFLUX_HOST=localhost
+        - INFLUX_PORT=8086
+        - INFLUX_DB=
+        - INFLUX_USERNAME=
+        - INFLUX_PASSWORD=
+      network_mode: "host"
