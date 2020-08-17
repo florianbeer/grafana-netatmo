@@ -114,7 +114,7 @@ if __name__ == "__main__":
             timezone = station["place"]["timezone"]
             longitude = station["place"]["location"][0]
             latitude = station["place"]["location"][1]
-            for module, moduleData in weatherData.lastData(exclude=3600).items():
+            for module, moduleData in weatherData.lastData(station=station_name, exclude=3600).items():
                 for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
                     value = eval(measurement)
                     if type(value) == int:
