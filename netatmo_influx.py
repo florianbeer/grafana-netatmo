@@ -74,7 +74,10 @@ if __name__ == "__main__":
     elif influx_db is None:
         influx_db = "grafana"
     if environ.get("INFLUX_SSL"):
-        influx_ssl = environ.get("INFLUX_SSL")
+        if environ.get("INFLUX_SSL") == "True":
+            influx_ssl = True
+        else:
+            influx_ssl = False
     elif influx_ssl is None:
         influx_ssl = False
     if environ.get("INFLUX_USERNAME"):
