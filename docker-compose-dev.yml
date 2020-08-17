@@ -15,6 +15,7 @@ services:
         - INFLUX_HOST=grafana-influxdb
         - INFLUX_PORT=8086
         - INFLUX_DB=
+        - INFLUX_SSL=
         - INFLUX_USERNAME=
         - INFLUX_PASSWORD=
       networks:

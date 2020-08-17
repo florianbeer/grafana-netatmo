@@ -32,6 +32,7 @@ if __name__ == "__main__":
     influx_host = None
     influx_port = None
     influx_db = None
+    influx_ssl = None
     influx_username = None
     influx_password = None
     args = parse_args()
@@ -47,6 +48,7 @@ if __name__ == "__main__":
         influx_host = config["influx"]["influx_host"]
         influx_port = config["influx"]["influx_port"]
         influx_db = config["influx"]["influx_db"]
+        influx_ssl = config["influx"]["influx_ssl"]
         influx_username = config["influx"]["influx_username"]
         influx_password = config["influx"]["influx_password"]
 
@@ -71,6 +73,10 @@ if __name__ == "__main__":
         influx_db = environ.get("INFLUX_DB")
     elif influx_db is None:
         influx_db = "grafana"
+    if environ.get("INFLUX_SSL"):
+        influx_ssl = environ.get("INFLUX_SSL")
+    elif influx_ssl is None:
+        influx_ssl = False
     if environ.get("INFLUX_USERNAME"):
         influx_username = environ.get("INFLUX_USERNAME")
     if environ.get("INFLUX_PASSWORD"):
@@ -86,7 +92,14 @@ if __name__ == "__main__":
         )
 
         weatherData = lnetatmo.WeatherStationData(authorization)
-        client = InfluxDBClient(influx_host, influx_port, influx_username, influx_password, influx_db)
+        client = InfluxDBClient(
+            host=influx_host,
+            port=influx_port,
+            username=influx_username,
+            password=influx_password,
+            database=influx_db,
+            ssl=influx_ssl
+        )
 
         for station in weatherData.stations:
             station_data = []

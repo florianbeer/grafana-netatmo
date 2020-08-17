@@ -12,6 +12,7 @@ services:
         - INFLUX_HOST=localhost
         - INFLUX_PORT=8086
         - INFLUX_DB=
+        - INFLUX_SSL=
         - INFLUX_USERNAME=
         - INFLUX_PASSWORD=
       network_mode: "host"
