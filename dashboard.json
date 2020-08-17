@@ -2089,6 +2089,7 @@
               "key": "module",
               "operator": "=~",
               "value": "/^$Module$/"
+            }
           ]
         }
       ],
