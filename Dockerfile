@@ -4,6 +4,7 @@ COPY requirements.txt /app/requirements.txt
 COPY netatmo_influx.py /app/netatmo_influx.py
 
 RUN apk add --no-cache tini \
-    && pip install --trusted-host pypi.python.org -r /app/requirements.txt
+    && pip install --trusted-host pypi.python.org -r /app/requirements.txt \
+    && chmod +x /app/netatmo_influx.py
 
 CMD [ "tini", "--", "/app/netatmo_influx.py" ]
