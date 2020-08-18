@@ -1,2 +1,2 @@
-git+https://github.com/philippelt/netatmo-api-python.git@master
-influxdb
+lnetatmo==1.6.2
+influxdb~=5.3.0
