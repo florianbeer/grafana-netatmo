@@ -13,6 +13,9 @@ Netatmo Weather Station dashboard for Grafana
 * The default is to search for a config file right next to the script, but you can point to any config file with the "-f" switch.
 
 ```ini
+[global]
+interval =
+
 [netatmo]
 client_id =
 client_secret =
