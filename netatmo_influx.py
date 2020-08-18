@@ -47,6 +47,9 @@ if __name__ == "__main__":
     args = parse_args()
     config = parse_config(args.config)
 
+    signal.signal(signal.SIGTERM, shutdown)
+    signal.signal(signal.SIGINT, shutdown)
+
     if "global" in config:
         interval = int(config["global"]["interval"])
 
@@ -102,9 +105,6 @@ if __name__ == "__main__":
         interval = int(environ.get("INTERVAL"))
 
     while running:
-        signal.signal(signal.SIGTERM, shutdown)
-        signal.signal(signal.SIGINT, shutdown)
-
         try:
             authorization = lnetatmo.ClientAuth(
                 clientId=client_id,
