@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # encoding=utf-8
 
+import signal
 import lnetatmo
 import argparse
 import configparser
+from time import sleep
 from os import environ
 from pathlib import Path
 from influxdb import InfluxDBClient
@@ -28,7 +30,14 @@ def parse_args():
     return parser.parse_args()
 
 
+def shutdown(_signal):
+    global running
+    running = False
+
+
 if __name__ == "__main__":
+    running = True
+    interval = None
     influx_host = None
     influx_port = None
     influx_db = None
@@ -37,6 +46,9 @@ if __name__ == "__main__":
     influx_password = None
     args = parse_args()
     config = parse_config(args.config)
+
+    if "global" in config:
+        interval = int(config["global"]["interval"])
 
     if "netatmo" in config:
         client_id = config["netatmo"]["client_id"]
@@ -84,65 +96,75 @@ if __name__ == "__main__":
         influx_username = environ.get("INFLUX_USERNAME")
     if environ.get("INFLUX_PASSWORD"):
         influx_password = environ.get("INFLUX_PASSWORD")
+    if interval is None:
+        interval = 300  # interval in seconds; default are 5 Minutes
+    elif environ.get("INTERVAL"):
+        interval = int(environ.get("INTERVAL"))
 
-    try:
-        authorization = lnetatmo.ClientAuth(
-            clientId=client_id,
-            clientSecret=client_secret,
-            username=netatmo_username,
-            password=netatmo_password,
-            scope="read_station",
-        )
+    while running:
+        signal.signal(signal.SIGTERM, shutdown)
+        signal.signal(signal.SIGINT, shutdown)
 
-        weatherData = lnetatmo.WeatherStationData(authorization)
-        client = InfluxDBClient(
-            host=influx_host,
-            port=influx_port,
-            username=influx_username,
-            password=influx_password,
-            database=influx_db,
-            ssl=influx_ssl
-        )
+        try:
+            authorization = lnetatmo.ClientAuth(
+                clientId=client_id,
+                clientSecret=client_secret,
+                username=netatmo_username,
+                password=netatmo_password,
+                scope="read_station",
+            )
 
-        for station in weatherData.stations:
-            station_data = []
-            module_data = []
-            station = weatherData.stationById(station)
-            station_name = station["station_name"]
-            altitude = station["place"]["altitude"]
-            country = station["place"]["country"]
-            timezone = station["place"]["timezone"]
-            longitude = station["place"]["location"][0]
-            latitude = station["place"]["location"][1]
-            for module, moduleData in weatherData.lastData(station=station_name, exclude=3600).items():
-                for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
-                    value = eval(measurement)
-                    if type(value) == int:
-                        value = float(value)
-                    station_data.append(
-                        {
-                            "measurement": measurement,
-                            "tags": {"station": station_name, "module": module},
-                            "time": moduleData["When"],
-                            "fields": {"value": value},
-                        }
-                    )
+            weatherData = lnetatmo.WeatherStationData(authorization)
+            client = InfluxDBClient(
+                host=influx_host,
+                port=influx_port,
+                username=influx_username,
+                password=influx_password,
+                database=influx_db,
+                ssl=influx_ssl
+            )
 
-                for sensor, value in moduleData.items():
-                    if sensor.lower() != "when":
+            for station in weatherData.stations:
+                station_data = []
+                module_data = []
+                station = weatherData.stationById(station)
+                station_name = station["station_name"]
+                altitude = station["place"]["altitude"]
+                country = station["place"]["country"]
+                timezone = station["place"]["timezone"]
+                longitude = station["place"]["location"][0]
+                latitude = station["place"]["location"][1]
+                for module, moduleData in weatherData.lastData(station=station_name, exclude=3600).items():
+                    for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
+                        value = eval(measurement)
                         if type(value) == int:
                             value = float(value)
-                        module_data.append(
+                        station_data.append(
                             {
-                                "measurement": sensor.lower(),
+                                "measurement": measurement,
                                 "tags": {"station": station_name, "module": module},
                                 "time": moduleData["When"],
                                 "fields": {"value": value},
                             }
                         )
 
-            client.write_points(station_data, time_precision="s", database=influx_db)
-            client.write_points(module_data, time_precision="s", database=influx_db)
-    except NameError:
-        print("No credentials supplied. No Netatmo Account available.")
-        exit(1)
+                    for sensor, value in moduleData.items():
+                        if sensor.lower() != "when":
+                            if type(value) == int:
+                                value = float(value)
+                            module_data.append(
+                                {
+                                    "measurement": sensor.lower(),
+                                    "tags": {"station": station_name, "module": module},
+                                    "time": moduleData["When"],
+                                    "fields": {"value": value},
+                                }
+                            )
+
+                client.write_points(station_data, time_precision="s", database=influx_db)
+                client.write_points(module_data, time_precision="s", database=influx_db)
+        except NameError:
+            print("No credentials supplied. No Netatmo Account available.")
+            exit(1)
+
+        sleep(interval)

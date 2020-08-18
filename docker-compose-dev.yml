@@ -18,6 +18,7 @@ services:
         - INFLUX_SSL=
         - INFLUX_USERNAME=
         - INFLUX_PASSWORD=
+        - INTERVAL=
       networks:
         - default
     grafana-influxdb:

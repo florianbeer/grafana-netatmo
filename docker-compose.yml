@@ -15,4 +15,5 @@ services:
         - INFLUX_SSL=
         - INFLUX_USERNAME=
         - INFLUX_PASSWORD=
+        - INTERVAL=
       network_mode: "host"

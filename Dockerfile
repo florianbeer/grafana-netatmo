@@ -1,11 +1,9 @@
 FROM python:3.8-alpine
 
-COPY requirements.txt /requirements.txt
+COPY requirements.txt /app/requirements.txt
+COPY netatmo_influx.py /app/netatmo_influx.py
 
-RUN apk add --no-cache git \
-    && pip install -r /requirements.txt \
-    && echo "*/10 * * * * python /netatmo_influx.py" > /etc/crontabs/root
+RUN apk add --no-cache tini \
+    && pip install --trusted-host pypi.python.org -r /app/requirements.txt
 
-COPY netatmo_influx.py /netatmo_influx.py
-
-CMD [ "/usr/sbin/crond", "-f", "-l", "8" ]
+CMD [ "tini", "--", "/app/netatmo_influx.py" ]
