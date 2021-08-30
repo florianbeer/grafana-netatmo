@@ -1,2 +1,2 @@
-lnetatmo==1.6.2
-influxdb~=5.3.0
+pyatmo~=5.2.3
+influxdb-client~=1.20.0

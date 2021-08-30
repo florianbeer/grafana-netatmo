@@ -2,13 +2,14 @@
 # encoding=utf-8
 
 import signal
-import lnetatmo
 import argparse
 import configparser
 from time import sleep
 from os import environ
 from pathlib import Path
-from influxdb import InfluxDBClient
+from datetime import datetime
+from influxdb_client import InfluxDBClient, WritePrecision
+from pyatmo import ClientAuth, WeatherStationData, ApiError
 
 
 def parse_config(config_file=None):
@@ -38,17 +39,23 @@ def shutdown(_signal):
 if __name__ == "__main__":
     running = True
     interval = None
+    authorization = None
+    client_id = None
+    client_secret = None
+    netatmo_username = None
+    netatmo_password = None
     influx_host = None
     influx_port = None
-    influx_db = None
-    influx_ssl = None
-    influx_username = None
-    influx_password = None
+    influx_bucket = None
+    influx_protocol = None
+    influx_token = None
+    influx_org = None
     args = parse_args()
     config = parse_config(args.config)
 
-    signal.signal(signal.SIGTERM, shutdown)
-    signal.signal(signal.SIGINT, shutdown)
+    if environ.get("TERM"):
+        signal.signal(signal.SIGTERM, shutdown)
+        signal.signal(signal.SIGINT, shutdown)
 
     if "global" in config:
         interval = int(config["global"]["interval"])
@@ -62,10 +69,10 @@ if __name__ == "__main__":
     if "influx" in config:
         influx_host = config["influx"]["influx_host"]
         influx_port = config["influx"]["influx_port"]
-        influx_db = config["influx"]["influx_db"]
-        influx_ssl = config["influx"]["influx_ssl"]
-        influx_username = config["influx"]["influx_username"]
-        influx_password = config["influx"]["influx_password"]
+        influx_bucket = config["influx"]["influx_bucket"]
+        influx_protocol = config["influx"]["influx_protocol"]
+        influx_token = config["influx"]["influx_token"]
+        influx_org = config["influx"]["influx_org"]
 
     if environ.get("NETATMO_CLIENT_ID"):
         client_id = environ.get("NETATMO_CLIENT_ID")
@@ -84,21 +91,21 @@ if __name__ == "__main__":
         influx_port = environ.get("INFLUX_PORT")
     elif influx_port is None:
         influx_port = 8086
-    if environ.get("INFLUX_DB"):
-        influx_db = environ.get("INFLUX_DB")
-    elif influx_db is None:
-        influx_db = "grafana"
-    if environ.get("INFLUX_SSL"):
-        if environ.get("INFLUX_SSL") == "True":
-            influx_ssl = True
+    if environ.get("INFLUX_BUCKET"):
+        influx_bucket = environ.get("INFLUX_BUCKET")
+    elif influx_bucket is None:
+        influx_bucket = "netatmo"
+    if environ.get("INFLUX_PROTOCOL"):
+        if environ.get("INFLUX_PROTOCOL") == "True":
+            influx_protocol = "https"
         else:
-            influx_ssl = False
-    elif influx_ssl is None:
-        influx_ssl = False
-    if environ.get("INFLUX_USERNAME"):
-        influx_username = environ.get("INFLUX_USERNAME")
-    if environ.get("INFLUX_PASSWORD"):
-        influx_password = environ.get("INFLUX_PASSWORD")
+            influx_protocol = "http"
+    elif influx_protocol is None:
+        influx_protocol = "http"
+    if environ.get("INFLUX_TOKEN"):
+        influx_token = environ.get("INFLUX_TOKEN")
+    if environ.get("INFLUX_ORG"):
+        influx_org = environ.get("INFLUX_ORG")
     if interval is None:
         interval = 300  # interval in seconds; default are 5 Minutes
     elif environ.get("INTERVAL"):
@@ -106,65 +113,86 @@ if __name__ == "__main__":
 
     while running:
         try:
-            authorization = lnetatmo.ClientAuth(
-                clientId=client_id,
-                clientSecret=client_secret,
+            authorization = ClientAuth(
+                client_id=client_id,
+                client_secret=client_secret,
                 username=netatmo_username,
                 password=netatmo_password,
                 scope="read_station",
             )
-
-            weatherData = lnetatmo.WeatherStationData(authorization)
-            client = InfluxDBClient(
-                host=influx_host,
-                port=influx_port,
-                username=influx_username,
-                password=influx_password,
-                database=influx_db,
-                ssl=influx_ssl
-            )
-
-            for station in weatherData.stations:
-                station_data = []
-                module_data = []
-                station = weatherData.stationById(station)
-                station_name = station["station_name"]
-                altitude = station["place"]["altitude"]
-                country = station["place"]["country"]
-                timezone = station["place"]["timezone"]
-                longitude = station["place"]["location"][0]
-                latitude = station["place"]["location"][1]
-                for module, moduleData in weatherData.lastData(station=station_name, exclude=3600).items():
-                    for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
-                        value = eval(measurement)
-                        if type(value) == int:
-                            value = float(value)
-                        station_data.append(
-                            {
-                                "measurement": measurement,
-                                "tags": {"station": station_name, "module": module},
-                                "time": moduleData["When"],
-                                "fields": {"value": value},
-                            }
-                        )
-
-                    for sensor, value in moduleData.items():
-                        if sensor.lower() != "when":
-                            if type(value) == int:
-                                value = float(value)
-                            module_data.append(
-                                {
-                                    "measurement": sensor.lower(),
-                                    "tags": {"station": station_name, "module": module},
-                                    "time": moduleData["When"],
-                                    "fields": {"value": value},
-                                }
-                            )
-
-                client.write_points(station_data, time_precision="s", database=influx_db)
-                client.write_points(module_data, time_precision="s", database=influx_db)
-        except NameError:
+        except ApiError:
             print("No credentials supplied. No Netatmo Account available.")
             exit(1)
+
+        try:
+            weatherData = WeatherStationData(authorization)
+            weatherData.update()
+
+            with InfluxDBClient(
+                    url=f"{influx_protocol}://{influx_host}:{influx_port}",
+                    token=influx_token,
+                    org=influx_org,
+                    debug=False
+            ) as _client:
+                with _client.write_api() as _write_client:
+
+                    for station_id in weatherData.stations:
+                        station_data = []
+                        module_data = []
+
+                        station = weatherData.get_station(station_id)
+                        station_name = station["station_name"]
+                        station_module_name = station["module_name"]
+
+                        altitude = station["place"]["altitude"]
+                        country = station["place"]["country"]
+                        timezone = station["place"]["timezone"]
+                        longitude = station["place"]["location"][0]
+                        latitude = station["place"]["location"][1]
+
+                        for module_id, moduleData in weatherData.get_last_data(station_id).items():
+                            module = weatherData.get_module(module_id)
+                            module_name = module["module_name"] if module else station["module_name"]
+
+                            if not module:
+                                for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
+                                    value = eval(measurement)
+                                    if type(value) == int:
+                                        value = float(value)
+                                    station_data.append(
+                                        {
+                                            "measurement": measurement,
+                                            "tags": {"station": station_name, "module": module_name},
+                                            "fields": {"value": value},
+                                            "time": moduleData["When"],
+                                        }
+                                    )
+
+                            for sensor, value in moduleData.items():
+                                if sensor.lower() == "wifi_status":
+                                    sensor = "rf_status"
+                                if sensor.lower() != "when":
+                                    if type(value) == int:
+                                        value = float(value)
+                                    module_data.append(
+                                        {
+                                            "measurement": sensor.lower(),
+                                            "tags": {"station": station_name, "module": module_name},
+                                            "fields": {"value": value},
+                                            "time": moduleData["When"],
+                                        }
+                                    )
+
+                        now = datetime.utcnow()
+                        strtime = now.strftime('%Y-%m-%d %H:%M:%S')
+
+                        _write_client.write(influx_bucket, influx_org, station_data, write_precision=WritePrecision.S)
+                        print(f"({strtime}) Stations: {len(station_data)} Data Points written to Influxdb")
+
+                        _write_client.write(influx_bucket, influx_org, module_data, write_precision=WritePrecision.S)
+                        print(f"({strtime}) Modules: {len(module_data)} Data Points written to Influxdb")
+        except ApiError as error:
+            print(error)
+            pass
 
         sleep(interval)
