@@ -14,23 +14,23 @@ Netatmo Weather Station dashboard for Grafana
 
 ```ini
 [global]
-interval =
+interval = 
 
 [netatmo]
-client_id =
-client_secret =
-netatmo_username =
-netatmo_password =
+client_id = 
+client_secret = 
+netatmo_username = 
+netatmo_password = 
 
 [influx]
-influx_host =
-influx_port =
-influx_db =
-influx_username =
-influx_password =
+influx_host = 
+influx_port = 
+influx_bucket = 
+influx_protocol = 
+influx_token = 
+influx_org = 
 ```
 
-* If you don't add InfluxDB credentials a localhost connection with no authentication is used. 
 * Create a cron job to run the script periodically e.g.
 
 ```bash
