@@ -1,0 +1,16 @@
+[global]
+interval = 300
+
+[netatmo]
+client_id =
+client_secret =
+netatmo_username =
+netatmo_password =
+
+[influx]
+influx_host =
+influx_port =
+influx_bucket =
+influx_protocol =
+influx_token =
+influx_org =

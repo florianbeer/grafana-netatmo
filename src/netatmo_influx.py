@@ -16,7 +16,7 @@ def parse_config(config_file=None):
     _config = configparser.ConfigParser(interpolation=None)
 
     if config_file is None:
-        config_file = Path('./config')
+        config_file = Path("config")
 
     if config_file.exists():
         _config.read(config_file)
@@ -26,7 +26,7 @@ def parse_config(config_file=None):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', dest='config', type=str, nargs=1, required=False)
+    parser.add_argument("-f", "--file", dest="config", type=str, nargs=1, required=False)
 
     return parser.parse_args()
 
@@ -129,10 +129,7 @@ if __name__ == "__main__":
             weatherData.update()
 
             with InfluxDBClient(
-                    url=f"{influx_protocol}://{influx_host}:{influx_port}",
-                    token=influx_token,
-                    org=influx_org,
-                    debug=False
+                url=f"{influx_protocol}://{influx_host}:{influx_port}", token=influx_token, org=influx_org, debug=False
             ) as _client:
                 with _client.write_api() as _write_client:
 
@@ -184,13 +181,17 @@ if __name__ == "__main__":
                                     )
 
                         now = datetime.utcnow()
-                        strtime = now.strftime('%Y-%m-%d %H:%M:%S')
+                        strtime = now.strftime("%Y-%m-%d %H:%M:%S")
 
-                        _write_client.write(influx_bucket, influx_org, station_data, write_precision=WritePrecision.S)
-                        print(f"({strtime}) Stations: {len(station_data)} Data Points written to Influxdb")
+                        if _write_client.write(
+                            influx_bucket, influx_org, station_data, write_precision=WritePrecision.S
+                        ):
+                            print(f"({strtime}) Stations: {len(station_data)} Data Points written to Influxdb")
 
-                        _write_client.write(influx_bucket, influx_org, module_data, write_precision=WritePrecision.S)
-                        print(f"({strtime}) Modules: {len(module_data)} Data Points written to Influxdb")
+                        if _write_client.write(
+                            influx_bucket, influx_org, module_data, write_precision=WritePrecision.S
+                        ):
+                            print(f"({strtime}) Modules: {len(module_data)} Data Points written to Influxdb")
         except ApiError as error:
             print(error)
             pass
