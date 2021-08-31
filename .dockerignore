@@ -2,5 +2,5 @@
 README.md
 screenshot.png
 docker-compose.yml
-docker-compose-test.yml
+docker-compose-dev.yml
 dashboard.json
