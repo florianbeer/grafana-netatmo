@@ -1,10 +1,11 @@
 # grafana-netatmo
+![pyatmo](./pyatmo.png)
 
 Netatmo Weather Station dashboard for Grafana
 
 [https://grafana.com/grafana/dashboards/12378](https://grafana.com/grafana/dashboards/12378)
 
-![Screenshot](https://raw.githubusercontent.com/florianbeer/grafana-netatmo/master/screenshot.png)
+![Screenshot](./screenshot.png)
 
 ## InfluxDB 2.0
 This new Version is for InfluxDB 2.0 only. If you want to use an older Influx Version, don't use this.
