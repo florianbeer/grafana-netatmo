@@ -1,4 +1,4 @@
-FROM python:3.8-alpine
+FROM python:3.10-alpine
 
 COPY requirements.txt /app/requirements.txt
 COPY src/netatmo_influx.py /app/netatmo_influx.py
