@@ -5,13 +5,29 @@ import signal
 import logging
 import argparse
 import configparser
+import pyatmo.helpers
 from time import sleep
 from os import environ
 from pathlib import Path
 from datetime import datetime
 from requests import ConnectionError
 from influxdb_client import InfluxDBClient, WritePrecision
+from influxdb_client.client.exceptions import InfluxDBError
 from pyatmo import ClientAuth, WeatherStationData, ApiError
+
+
+class BatchingCallback(object):
+    def success(self, conf: (str, str, str), data: str):
+        logger.info(f"Written batch with size {len(data)}.")
+        logger.debug(f"Batch: {conf}, Data: {data}")
+
+    def error(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        logger.error(f"Cannot write batch due: {exception}")
+        logger.debug(f"Batch: {conf}, Data: {data}, Exception: {exception}")
+
+    def retry(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+        logger.warning(f"Retryable error occurs for batch, retry: {exception}")
+        logger.debug(f"Batch: {conf}, Data: {data}, Exception: {exception}")
 
 
 def parse_config(config_file=None):
@@ -44,13 +60,29 @@ def get_environ(name, def_val):
 
 def set_logging_level(verbosity, level):
     switcher = {
-        1: logging.WARNING,
-        2: logging.INFO,
-        3: logging.DEBUG,
+        1: "WARNING",
+        2: "INFO",
+        3: "DEBUG",
     }
     if verbosity > 0:
         level = switcher.get(verbosity)
-    logging.basicConfig(format="%(asctime)s - %(levelname)s:%(message)s", datefmt="%d.%m.%Y %H:%M:%S", level=level)
+
+    fmt = logging.Formatter("%(asctime)s - %(levelname)s:%(message)s", datefmt="%d.%m.%Y %H:%M:%S")
+
+    # Basic Setting for Debugging
+    pyatmo.helpers.LOG.setLevel(level)
+
+    # Logger
+    _logger = logging.getLogger(__name__)
+
+    ch = logging.StreamHandler()
+    ch.setFormatter(fmt)
+
+    _logger.addHandler(ch)
+    _logger.setLevel(level)
+    _logger.info(f"Setting loglevel to {level}.")
+
+    return _logger
 
 
 def shutdown(_signal):
@@ -72,11 +104,10 @@ if __name__ == "__main__":
     influx_protocol = None
     influx_token = None
     influx_org = None
+    influx_debug = False
+    influx_callback = BatchingCallback()
     args = parse_args()
     config = parse_config(args.config)
-
-    # set initial logging level
-    set_logging_level(0, "DEBUG")
 
     if get_environ("TERM", None):
         signal.signal(signal.SIGTERM, shutdown)
@@ -115,9 +146,11 @@ if __name__ == "__main__":
     loglevel = get_environ("LOGLEVEL", loglevel)
 
     # set logging level
-    set_logging_level(args.verbosity, loglevel)
+    logger = set_logging_level(args.verbosity, loglevel)
+    if loglevel == "DEBUG" or args.verbosity == 3:
+        influx_debug = True
 
-    logging.info("Starting Netatmo Crawler...")
+    logger.info("Starting Netatmo Crawler...")
     while running:
         try:
             authorization = ClientAuth(
@@ -128,14 +161,11 @@ if __name__ == "__main__":
                 scope="read_station",
             )
         except ApiError:
-            logging.error("No credentials supplied. No Netatmo Account available.")
+            logger.error("No credentials supplied. No Netatmo Account available.")
             exit(1)
         except ConnectionError:
-            logging.error(f"Can't connect to Netatmo API. Retrying in {interval} second(s)...")
+            logger.error(f"Can't connect to Netatmo API. Retrying in {interval} second(s)...")
             pass
-        except KeyboardInterrupt:
-            logging.info("Received Interrupt. Shutting down...")
-            running = False
         else:
             try:
                 weatherData = WeatherStationData(authorization)
@@ -145,9 +175,13 @@ if __name__ == "__main__":
                     url=f"{influx_protocol}://{influx_host}:{influx_port}",
                     token=influx_token,
                     org=influx_org,
-                    debug=False,
+                    debug=influx_debug,
                 ) as _client:
-                    with _client.write_api() as _write_client:
+                    with _client.write_api(
+                        success_callback=influx_callback.success,
+                        error_callback=influx_callback.error,
+                        retry_callback=influx_callback.retry,
+                    ) as _write_client:
 
                         for station_id in weatherData.stations:
                             station_data = []
@@ -199,22 +233,15 @@ if __name__ == "__main__":
                             now = datetime.utcnow()
                             strtime = now.strftime("%Y-%m-%d %H:%M:%S")
 
-                            if _write_client.write(
+                            _write_client.write(
                                 influx_bucket, influx_org, station_data, write_precision=WritePrecision.S
-                            ):
-                                logging.info(
-                                    f"({strtime}) Stations: {len(station_data)} Data Points written to Influxdb"
-                                )
+                            )
 
-                            if _write_client.write(
+                            _write_client.write(
                                 influx_bucket, influx_org, module_data, write_precision=WritePrecision.S
-                            ):
-                                logging.info(f"({strtime}) Modules: {len(module_data)} Data Points written to Influxdb")
+                            )
             except ApiError as error:
-                logging.error(error)
+                logger.error(error)
                 pass
-            except KeyboardInterrupt:
-                logging.info("Received Interrupt. Shutting down...")
-                running = False
 
         sleep(interval)
