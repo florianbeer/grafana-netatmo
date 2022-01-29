@@ -1,5 +1,6 @@
 [global]
 interval = 300
+loglevel = INFO
 
 [netatmo]
 client_id =

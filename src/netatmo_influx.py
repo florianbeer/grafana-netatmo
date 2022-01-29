@@ -34,15 +34,23 @@ def parse_args():
     return parser.parse_args()
 
 
-def set_logging_level(verbosity):
+def get_environ(name, def_val):
+    env_val = def_val
+    if environ.get(name):
+        env_val = environ.get(name)
+
+    return env_val
+
+
+def set_logging_level(verbosity, level):
     switcher = {
-        0: logging.ERROR,
         1: logging.WARNING,
         2: logging.INFO,
         3: logging.DEBUG,
     }
-    loglevel = switcher.get(verbosity)
-    logging.basicConfig(format="%(asctime)s - %(levelname)s:%(message)s", datefmt="%d.%m.%Y %H:%M:%S", level=loglevel)
+    if verbosity > 0:
+        level = switcher.get(verbosity)
+    logging.basicConfig(format="%(asctime)s - %(levelname)s:%(message)s", datefmt="%d.%m.%Y %H:%M:%S", level=level)
 
 
 def shutdown(_signal):
@@ -52,82 +60,56 @@ def shutdown(_signal):
 
 if __name__ == "__main__":
     running = True
-    interval = None
-    authorization = None
-    client_id = None
-    client_secret = None
-    netatmo_username = None
-    netatmo_password = None
-    influx_host = None
-    influx_port = None
-    influx_bucket = None
-    influx_protocol = None
-    influx_token = None
-    influx_org = None
     args = parse_args()
     config = parse_config(args.config)
 
-    # set logging level
-    set_logging_level(args.verbosity)
+    # set initial logging level
+    set_logging_level(0, "DEBUG")
 
-    if environ.get("TERM"):
+    if get_environ("TERM", None):
         signal.signal(signal.SIGTERM, shutdown)
         signal.signal(signal.SIGINT, shutdown)
 
     if "global" in config:
-        interval = int(config["global"]["interval"])
+        interval = int(config["global"].get("interval", "300"))  # interval in seconds; default are 5 Minutes
+        loglevel = config["global"].get("loglevel", "INFO")  # set loglevel by Name
 
     if "netatmo" in config:
-        client_id = config["netatmo"]["client_id"]
-        client_secret = config["netatmo"]["client_secret"]
-        netatmo_username = config["netatmo"]["netatmo_username"]
-        netatmo_password = config["netatmo"]["netatmo_password"]
+        client_id = config["netatmo"].get("client_id", None)
+        client_secret = config["netatmo"].get("client_secret", None)
+        netatmo_username = config["netatmo"].get("netatmo_username", None)
+        netatmo_password = config["netatmo"].get("netatmo_password", None)
 
     if "influx" in config:
-        influx_host = config["influx"]["influx_host"]
-        influx_port = config["influx"]["influx_port"]
-        influx_bucket = config["influx"]["influx_bucket"]
-        influx_protocol = config["influx"]["influx_protocol"]
-        influx_token = config["influx"]["influx_token"]
-        influx_org = config["influx"]["influx_org"]
+        influx_host = config["influx"].get("influx_host", "localhost")
+        influx_port = config["influx"].get("influx_port", "8086")
+        influx_bucket = config["influx"].get("influx_bucket", "netatmo")
+        influx_protocol = config["influx"].get("influx_protocol", "http")
+        influx_token = config["influx"].get("influx_token", None)
+        influx_org = config["influx"].get("influx_org", None)
 
-    if environ.get("NETATMO_CLIENT_ID"):
-        client_id = environ.get("NETATMO_CLIENT_ID")
-    if environ.get("NETATMO_CLIENT_SECRET"):
-        client_secret = environ.get("NETATMO_CLIENT_SECRET")
-    if environ.get("NETATMO_USERNAME"):
-        netatmo_username = environ.get("NETATMO_USERNAME")
-    if environ.get("NETATMO_PASSWORD"):
-        netatmo_password = environ.get("NETATMO_PASSWORD")
+    # Environment Variables takes precedence over config if set
+    try:
+        client_id = get_environ("NETATMO_CLIENT_ID", client_id)
+        client_secret = get_environ("NETATMO_CLIENT_SECRET", client_secret)
+        netatmo_username = get_environ("NETATMO_USERNAME", netatmo_username)
+        netatmo_password = get_environ("NETATMO_PASSWORD", netatmo_password)
+        influx_host = get_environ("INFLUX_HOST", influx_host)
+        influx_port = get_environ("INFLUX_PORT", influx_port)
+        influx_bucket = get_environ("INFLUX_BUCKET", influx_bucket)
+        influx_protocol = get_environ("INFLUX_PROTOCOL", influx_protocol)
+        influx_token = get_environ("INFLUX_TOKEN", influx_token)
+        influx_org = get_environ("INFLUX_ORG", influx_org)
+        interval = int(get_environ("INTERVAL", interval))
+        loglevel = get_environ("LOGLEVEL", loglevel)
+    except NameError:
+        logging.error("No Config or ENV Var found!")
+        exit(1)
 
-    if environ.get("INFLUX_HOST"):
-        influx_host = environ.get("INFLUX_HOST")
-    elif influx_host is None:
-        influx_host = "localhost"
-    if environ.get("INFLUX_PORT"):
-        influx_port = environ.get("INFLUX_PORT")
-    elif influx_port is None:
-        influx_port = 8086
-    if environ.get("INFLUX_BUCKET"):
-        influx_bucket = environ.get("INFLUX_BUCKET")
-    elif influx_bucket is None:
-        influx_bucket = "netatmo"
-    if environ.get("INFLUX_PROTOCOL"):
-        if environ.get("INFLUX_PROTOCOL") == "True":
-            influx_protocol = "https"
-        else:
-            influx_protocol = "http"
-    elif influx_protocol is None:
-        influx_protocol = "http"
-    if environ.get("INFLUX_TOKEN"):
-        influx_token = environ.get("INFLUX_TOKEN")
-    if environ.get("INFLUX_ORG"):
-        influx_org = environ.get("INFLUX_ORG")
-    if interval is None:
-        interval = 300  # interval in seconds; default are 5 Minutes
-    elif environ.get("INTERVAL"):
-        interval = int(environ.get("INTERVAL"))
+    # set logging level
+    set_logging_level(args.verbosity, loglevel)
 
+    logging.info("Starting Netatmo Crawler...")
     while running:
         try:
             authorization = ClientAuth(
