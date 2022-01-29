@@ -60,6 +60,18 @@ def shutdown(_signal):
 
 if __name__ == "__main__":
     running = True
+    interval = None
+    loglevel = None
+    client_id = None
+    client_secret = None
+    netatmo_username = None
+    netatmo_password = None
+    influx_host = None
+    influx_port = None
+    influx_bucket = None
+    influx_protocol = None
+    influx_token = None
+    influx_org = None
     args = parse_args()
     config = parse_config(args.config)
 
@@ -89,22 +101,18 @@ if __name__ == "__main__":
         influx_org = config["influx"].get("influx_org", None)
 
     # Environment Variables takes precedence over config if set
-    try:
-        client_id = get_environ("NETATMO_CLIENT_ID", client_id)
-        client_secret = get_environ("NETATMO_CLIENT_SECRET", client_secret)
-        netatmo_username = get_environ("NETATMO_USERNAME", netatmo_username)
-        netatmo_password = get_environ("NETATMO_PASSWORD", netatmo_password)
-        influx_host = get_environ("INFLUX_HOST", influx_host)
-        influx_port = get_environ("INFLUX_PORT", influx_port)
-        influx_bucket = get_environ("INFLUX_BUCKET", influx_bucket)
-        influx_protocol = get_environ("INFLUX_PROTOCOL", influx_protocol)
-        influx_token = get_environ("INFLUX_TOKEN", influx_token)
-        influx_org = get_environ("INFLUX_ORG", influx_org)
-        interval = int(get_environ("INTERVAL", interval))
-        loglevel = get_environ("LOGLEVEL", loglevel)
-    except NameError:
-        logging.error("No Config or ENV Var found!")
-        exit(1)
+    client_id = get_environ("NETATMO_CLIENT_ID", client_id)
+    client_secret = get_environ("NETATMO_CLIENT_SECRET", client_secret)
+    netatmo_username = get_environ("NETATMO_USERNAME", netatmo_username)
+    netatmo_password = get_environ("NETATMO_PASSWORD", netatmo_password)
+    influx_host = get_environ("INFLUX_HOST", influx_host)
+    influx_port = get_environ("INFLUX_PORT", influx_port)
+    influx_bucket = get_environ("INFLUX_BUCKET", influx_bucket)
+    influx_protocol = get_environ("INFLUX_PROTOCOL", influx_protocol)
+    influx_token = get_environ("INFLUX_TOKEN", influx_token)
+    influx_org = get_environ("INFLUX_ORG", influx_org)
+    interval = int(get_environ("INTERVAL", interval))
+    loglevel = get_environ("LOGLEVEL", loglevel)
 
     # set logging level
     set_logging_level(args.verbosity, loglevel)
