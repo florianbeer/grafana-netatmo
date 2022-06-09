@@ -19,10 +19,12 @@ services:
         - INFLUX_USERNAME=
         - INFLUX_PASSWORD=
         - INTERVAL=
+        - INTERVAL=300
+        - LOGLEVEL=INFO
       networks:
         - default
     grafana-influxdb:
-      image: library/influxdb:1.7-alpine
+      image: library/influxdb:2.1-alpine
       container_name: grafana-influxdb
       restart: unless-stopped
       environment:

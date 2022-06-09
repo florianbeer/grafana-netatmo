@@ -24,21 +24,22 @@ Influx 2.0 also uses tokens instead of password authentication.
 
 ```ini
 [global]
-interval = 
+interval = 300
+loglevel = INFO
 
 [netatmo]
-client_id = 
-client_secret = 
-netatmo_username = 
-netatmo_password = 
+client_id =
+client_secret =
+netatmo_username =
+netatmo_password =
 
 [influx]
-influx_host = 
-influx_port = 
-influx_bucket = 
-influx_protocol = 
-influx_token = 
-influx_org = 
+influx_host =
+influx_port =
+influx_bucket =
+influx_protocol =
+influx_token =
+influx_org =
 ```
 
 * Create a cron job to run the script periodically e.g.
