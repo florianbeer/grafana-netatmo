@@ -15,3 +15,11 @@ https://grafana.com/grafana/dashboards/12378
 # cat /etc/cron.d/netatmo
 */5 * * * * root  /usr/local/bin/netatmo_influx.py > /dev/null 2>&1
 ```
+
+## Possible error when running the script
+If netatmo_influx.py shows this error when running, you might need to downgrade to v1.6.0 of lnetatmo:
+
+```Traceback (most recent call last):
+File "netatmo_influx.py", line 39, in
+for module, moduleData in weatherData.lastData(station=station_name, exclude=3600).items():
+TypeError: lastData() got an unexpected keyword argument 'station'
