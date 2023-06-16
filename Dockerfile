@@ -1,10 +1,11 @@
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
-COPY requirements.txt /app/requirements.txt
-COPY src/netatmo_influx.py /app/netatmo_influx.py
+COPY pyproject.toml poetry.lock grafana_netatmo/netatmo_influx.py /app/
 
+WORKDIR /app
 RUN apk add --no-cache build-base \
-    && python3 -m pip install --no-cache-dir --trusted-host pypi.python.org -r /app/requirements.txt \
+    && python3 -m pip install --no-cache-dir --trusted-host pypi.python.org poetry==1.4.2 \
+    && poetry install --no-interaction --no-ansi \
     && apk del build-base \
     && rm -rf /var/cache/apk/*
 
