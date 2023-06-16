@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "grafana-netatmo"
+version = "0.1.0"
+description = "A basic crawler for netatmo api"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "grafana_netatmo"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyatmo = "^7.5.0"
+influxdb-client = "^1.36.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+flake8 = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
