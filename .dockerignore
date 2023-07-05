@@ -1,5 +1,4 @@
 .gitignore
-README.md
 screenshot.png
 docker-compose.yml
 docker-compose-dev.yml
