@@ -2,7 +2,8 @@ FROM python:3.11-alpine
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 
-COPY pyproject.toml poetry.lock README.md grafana_netatmo/netatmo_influx.py /app/
+COPY pyproject.toml poetry.lock README.md /app/
+COPY grafana_netatmo/netatmo_influx.py /app/grafana_netatmo/
 
 WORKDIR /app
 RUN apk add --no-cache build-base \
@@ -11,4 +12,4 @@ RUN apk add --no-cache build-base \
     && apk del build-base \
     && rm -rf /var/cache/apk/* ~/.cache/pypoetry ~/.local/share/virtualenv
 
-CMD [ "poetry", "run", "python", "/app/netatmo_influx.py" ]
+CMD [ "poetry", "run", "python", "/app/grafana_netatmo/netatmo_influx.py" ]
