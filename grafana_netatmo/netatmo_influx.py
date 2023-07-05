@@ -17,15 +17,18 @@ from pyatmo import ClientAuth, WeatherStationData, ApiError
 
 
 class BatchingCallback(object):
-    def success(self, conf: (str, str, str), data: str):
+    @staticmethod
+    def success(conf: (str, str, str), data: str):
         logger.info(f"Written batch with size {len(data)}.")
         logger.debug(f"Batch: {conf}, Data: {data}")
 
-    def error(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+    @staticmethod
+    def error(conf: (str, str, str), data: str, exception: InfluxDBError):
         logger.error(f"Cannot write batch due: {exception}")
         logger.debug(f"Batch: {conf}, Data: {data}, Exception: {exception}")
 
-    def retry(self, conf: (str, str, str), data: str, exception: InfluxDBError):
+    @staticmethod
+    def retry(conf: (str, str, str), data: str, exception: InfluxDBError):
         logger.warning(f"Retryable error occurs for batch, retry: {exception}")
         logger.debug(f"Batch: {conf}, Data: {data}, Exception: {exception}")
 
@@ -182,7 +185,6 @@ if __name__ == "__main__":
                         error_callback=influx_callback.error,
                         retry_callback=influx_callback.retry,
                     ) as _write_client:
-
                         for station_id in weatherData.stations:
                             station_data = []
                             module_data = []

@@ -1,3 +1,0 @@
-pyatmo~=6.2.2
-influxdb-client~=1.25.0
-requests~=2.27.1
