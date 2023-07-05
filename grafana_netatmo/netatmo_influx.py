@@ -17,7 +17,6 @@ from pyatmo import ClientAuth, WeatherStationData, ApiError
 
 
 class BatchingCallback(object):
-
     @staticmethod
     def success(conf: (str, str, str), data: str):
         logger.info(f"Written batch with size {len(data)}.")
@@ -186,7 +185,6 @@ if __name__ == "__main__":
                         error_callback=influx_callback.error,
                         retry_callback=influx_callback.retry,
                     ) as _write_client:
-
                         for station_id in weatherData.stations:
                             station_data = []
                             module_data = []

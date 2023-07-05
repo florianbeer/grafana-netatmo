@@ -8,10 +8,11 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: Install linters
@@ -23,4 +24,4 @@ jobs:
         flake8 grafana_netatmo --count --max-line-length=127 --statistics
     - name: Lint with black
       run: |
-        black -t py310 -l 120 --check --diff grafana_netatmo
+        black -t py311 -l 120 --check --diff grafana_netatmo
