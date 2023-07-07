@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "grafana-netatmo"
-version = "0.1.0"
+version = "3.2.4"
 description = "A basic crawler for netatmo api"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
