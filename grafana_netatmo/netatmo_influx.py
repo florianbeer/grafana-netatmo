@@ -227,7 +227,11 @@ if __name__ == "__main__":
                                         module_data.append(
                                             {
                                                 "measurement": sensor.lower(),
-                                                "tags": {"station": station_name, "module": module_name, "data_type": module_data_type},
+                                                "tags": {
+                                                    "station": station_name,
+                                                    "module": module_name,
+                                                    "data_type": module_data_type,
+                                                },
                                                 "fields": {"value": value},
                                                 "time": moduleData["When"],
                                             }
