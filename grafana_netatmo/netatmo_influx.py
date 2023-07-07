@@ -202,6 +202,7 @@ if __name__ == "__main__":
                             for module_id, moduleData in weatherData.get_last_data(station_id).items():
                                 module = weatherData.get_module(module_id)
                                 module_name = module["module_name"] if module else station["module_name"]
+                                module_data_type = module["data_type"][0] if module else station["data_type"][0]
 
                                 if not module:
                                     for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
@@ -226,7 +227,7 @@ if __name__ == "__main__":
                                         module_data.append(
                                             {
                                                 "measurement": sensor.lower(),
-                                                "tags": {"station": station_name, "module": module_name},
+                                                "tags": {"station": station_name, "module": module_name, "data_type": module_data_type},
                                                 "fields": {"value": value},
                                                 "time": moduleData["When"],
                                             }
