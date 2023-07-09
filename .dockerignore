@@ -2,5 +2,4 @@
 screenshot.png
 docker-compose.yml
 docker-compose-dev.yml
-dashboard.json
 dashboard_influx2.json

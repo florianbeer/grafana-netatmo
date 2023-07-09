@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -20,36 +23,44 @@
   },
   "description": "",
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 13,
-  "iteration": 1630402690851,
+  "id": 26,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
-      "datasource": null,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
       "gridPos": {
         "h": 6,
-        "w": 5,
-        "x": 1,
+        "w": 6,
+        "x": 0,
         "y": 0
       },
       "id": 39,
       "links": [],
       "options": {
-        "content": "<div style=\"height:100%;display:flex;justify-content:center;align-items:center;\">\n<h1 style=\"font-size:300%;font-weight:bold;\">$Station</h1>\n</div>",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<div style=\"height:100%;display:flex;justify-content:center;align-items:center;\">\n<h1 style=\"font-size:300%;font-weight:bold;\">$station</h1>\n</div>",
         "mode": "html"
       },
-      "pluginVersion": "8.1.2",
-      "timeFrom": null,
-      "timeShift": null,
+      "pluginVersion": "10.0.1",
       "title": "Station",
       "transparent": true,
       "type": "text"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -85,12 +96,11 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 4,
-        "x": 7,
+        "w": 6,
+        "x": 6,
         "y": 0
       },
       "id": 49,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -108,9 +118,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -128,7 +142,7 @@
           "measurement": "timezone",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"timezone\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"module\"])\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"timezone\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"module\"])\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -154,33 +168,36 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Timezone",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-YlBl"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "dB",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 10,
-            "gradientMode": "none",
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -211,7 +228,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "dB"
         },
         "overrides": []
       },
@@ -227,11 +244,13 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.2",
@@ -239,6 +258,10 @@
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -268,7 +291,7 @@
           "measurement": "noise",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"noise\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"noise\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -294,15 +317,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Noise",
       "transparent": true,
       "type": "timeseries"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -363,11 +386,15 @@
         "showThresholdMarkers": false,
         "text": {}
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "repeatDirection": "h",
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -397,7 +424,7 @@
           "measurement": "noise",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"noise\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"noise\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -430,15 +457,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Noise Level",
       "transparent": true,
       "type": "gauge"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -474,12 +501,11 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 4,
-        "x": 7,
+        "w": 6,
+        "x": 6,
         "y": 3
       },
       "id": 37,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -497,9 +523,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -517,7 +547,7 @@
           "measurement": "altitude",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"altitude\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"altitude\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -543,20 +573,23 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Altitude",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -568,8 +601,8 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -599,6 +632,10 @@
               },
               {
                 "color": "orange",
+                "value": 1500
+              },
+              {
+                "color": "red",
                 "value": 2000
               }
             ]
@@ -621,11 +658,13 @@
           "calcs": [
             "mean"
           ],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.2",
@@ -633,6 +672,10 @@
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -662,7 +705,7 @@
           "measurement": "co2",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"co2\")\r\n  |> filter(fn: (r) => r[\"module\"] =~ /${Module:pipe}/)\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"co2\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"module\"] =~ /${temp_module:pipe}/)\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -688,21 +731,24 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "CO2",
       "transformations": [],
       "transparent": true,
       "type": "timeseries"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -714,8 +760,8 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -759,11 +805,13 @@
           "calcs": [
             "mean"
           ],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.2",
@@ -771,6 +819,10 @@
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -800,7 +852,7 @@
           "measurement": "co2",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> filter(fn: (r) => r[\"module\"] =~ /${Module:pipe}/)\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"module\"] =~ /${temp_module:pipe}/)\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -826,37 +878,41 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Temperatur",
       "transformations": [],
       "transparent": true,
       "type": "timeseries"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-BlPu",
+            "seriesBy": "last"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 10,
-            "gradientMode": "none",
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineStyle": {
               "fill": "solid"
             },
-            "lineWidth": 1,
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -871,6 +927,7 @@
               "mode": "off"
             }
           },
+          "decimals": 3,
           "links": [],
           "mappings": [],
           "thresholds": {
@@ -879,13 +936,10 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
-          }
+          },
+          "unit": "pressurembar"
         },
         "overrides": []
       },
@@ -901,11 +955,13 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.2",
@@ -913,6 +969,10 @@
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -942,7 +1002,7 @@
           "measurement": "pressure",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure\")\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -968,15 +1028,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Pressure",
       "transparent": true,
       "type": "timeseries"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -986,10 +1046,12 @@
             {
               "options": {
                 "down": {
-                  "text": "⇣"
+                  "index": 0,
+                  "text": "↓"
                 },
                 "up": {
-                  "text": "⇡"
+                  "index": 1,
+                  "text": "↑"
                 }
               },
               "type": "value"
@@ -1019,7 +1081,6 @@
         "y": 6
       },
       "id": 15,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -1037,9 +1098,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1063,7 +1128,7 @@
           "measurement": "pressure_trend",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure_trend\")\r\n  |> filter(fn: (r) => r[\"station\"] == \"${Station}\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Trend\"})\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure_trend\")\r\n  |> filter(fn: (r) => r[\"station\"] == \"${station}\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Trend\"})\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1089,15 +1154,16 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Pressure Trend",
       "transparent": true,
       "type": "stat"
     },
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1106,31 +1172,41 @@
       },
       "id": 24,
       "panels": [],
-      "repeat": "Module",
-      "title": "$Module",
+      "repeat": "temp_module",
+      "repeatDirection": "h",
+      "title": "$temp_module",
       "type": "row"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "max"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 10,
-            "gradientMode": "none",
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -1157,7 +1233,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 32
               }
             ]
           },
@@ -1179,19 +1255,24 @@
           "calcs": [
             "mean"
           ],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "pluginVersion": "8.1.2",
-      "repeat": null,
       "repeatDirection": "h",
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1221,7 +1302,7 @@
           "measurement": "temperature",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"last\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -1254,15 +1335,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Temperature",
       "transparent": true,
       "type": "timeseries"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1289,11 +1370,11 @@
               },
               {
                 "color": "#EAB839",
-                "value": 28
+                "value": 23
               },
               {
                 "color": "red",
-                "value": 32
+                "value": 29
               }
             ]
           },
@@ -1308,7 +1389,6 @@
         "y": 13
       },
       "id": 40,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -1326,10 +1406,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "repeatDirection": "h",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1353,7 +1437,7 @@
           "measurement": "temperature",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+          "query": "  from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1385,15 +1469,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Current",
       "transparent": true,
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1420,11 +1504,11 @@
               },
               {
                 "color": "#eab839",
-                "value": 28
+                "value": 23
               },
               {
                 "color": "red",
-                "value": 32
+                "value": 29
               }
             ]
           },
@@ -1439,7 +1523,6 @@
         "y": 13
       },
       "id": 30,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -1457,10 +1540,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "repeatDirection": "h",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1484,7 +1571,7 @@
           "measurement": "max_temp",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"max_temp\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"max_temp\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1516,15 +1603,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Max",
       "transparent": true,
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1549,14 +1636,6 @@
               {
                 "color": "#FADE2A",
                 "value": null
-              },
-              {
-                "color": "rgba(237, 129, 40, 0.89)",
-                "value": 100
-              },
-              {
-                "color": "#d44a3a",
-                "value": 150
               }
             ]
           },
@@ -1585,12 +1664,14 @@
         "showThresholdMarkers": false,
         "text": {}
       },
-      "pluginVersion": "8.1.2",
-      "repeat": null,
-      "repeatDirection": "h",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
           "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1620,7 +1701,7 @@
           "measurement": "humidity",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"humidity\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"humidity\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1652,14 +1733,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Humidity",
       "transparent": true,
       "type": "gauge"
     },
     {
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -1703,7 +1785,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 6,
         "w": 2,
         "x": 20,
         "y": 13
@@ -1722,10 +1804,14 @@
         "showThresholdMarkers": false,
         "text": {}
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
           "alias": "",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1743,7 +1829,7 @@
           "measurement": "rf_status",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rf_status\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value) * -1.0)} ))\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rf_status\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value) * -1.0)} ))\r\n  |> yield(name: \"last\")",
           "rawQuery": false,
           "refId": "A",
           "resultFormat": "time_series",
@@ -1782,15 +1868,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Signal",
       "transparent": true,
       "type": "gauge"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1831,7 +1917,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 6,
         "w": 2,
         "x": 22,
         "y": 13
@@ -1851,9 +1937,13 @@
         "showThresholdMarkers": false,
         "text": {}
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -1877,7 +1967,7 @@
           "measurement": "battery_percent",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"battery_percent\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"battery_percent\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1909,15 +1999,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Battery",
       "transparent": true,
       "type": "gauge"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1958,7 +2048,6 @@
         "y": 16
       },
       "id": 14,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -1976,9 +2065,13 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
+      "pluginVersion": "10.0.1",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -2002,7 +2095,7 @@
           "measurement": "temp_trend",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temp_trend\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Trend\"})\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temp_trend\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Trend\"})\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2034,15 +2127,15 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Temperature Trend",
       "transparent": true,
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
-      "datasource": "InfluxDB-Netatmo",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2069,11 +2162,11 @@
               },
               {
                 "color": "#eab839",
-                "value": 28
+                "value": 23
               },
               {
                 "color": "red",
-                "value": 32
+                "value": 29
               }
             ]
           },
@@ -2088,7 +2181,6 @@
         "y": 16
       },
       "id": 17,
-      "interval": null,
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -2106,11 +2198,14 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.2",
-      "repeat": null,
+      "pluginVersion": "10.0.1",
       "repeatDirection": "h",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
           "groupBy": [
             {
               "params": [
@@ -2134,7 +2229,7 @@
           "measurement": "min_temp",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${Module}\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"min_temp\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${temp_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Temperature\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"min_temp\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -2166,36 +2261,1902 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Min",
       "transparent": true,
       "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 135,
+      "panels": [],
+      "repeat": "rain_module",
+      "repeatDirection": "h",
+      "title": "$rain_module",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "lengthmm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "id": 196,
+      "interval": "",
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.1.2",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "10m"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "module"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "temperature",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${rain_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Rain\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rain\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value)) * 10.0 }))\r\n  |> yield(name: \"mean\")",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "title": "Rain",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": null
+              }
+            ]
+          },
+          "unit": "lengthmm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 48
+      },
+      "hideTimeOverride": true,
+      "id": 197,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.1",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "temperature",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${rain_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Rain\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"sum_rain_1\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value)) * 10.0 }))\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "timeFrom": "1h",
+      "title": "Summary (Last Hour)",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#73BF69",
+                "value": null
+              }
+            ]
+          },
+          "unit": "lengthmm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 48
+      },
+      "hideTimeOverride": true,
+      "id": 198,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.1",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "temperature",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${rain_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Rain\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"sum_rain_24\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value)) * 10.0 }))\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "timeFrom": "24h",
+      "title": "Summary (Today)",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "-"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "max": 0,
+          "min": -127,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-red",
+                "value": null
+              },
+              {
+                "color": "semi-dark-orange",
+                "value": -86
+              },
+              {
+                "color": "semi-dark-blue",
+                "value": -71
+              },
+              {
+                "color": "rgba(0, 0, 0, 0)",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 20,
+        "y": 48
+      },
+      "id": 165,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {}
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "alias": "",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "rf_status",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${rain_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Rain\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rf_status\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value) * -1.0)} ))\r\n  |> yield(name: \"last\")",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              },
+              {
+                "params": [
+                  "*-1"
+                ],
+                "type": "math"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            },
+            {
+              "condition": "AND",
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            }
+          ]
+        }
+      ],
+      "title": "Signal",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "-"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#d44a3a",
+                "value": null
+              },
+              {
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 10
+              },
+              {
+                "color": "#299c46",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 22,
+        "y": 48
+      },
+      "id": 166,
+      "links": [],
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {}
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "battery_percent",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${rain_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Rain\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"battery_percent\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "title": "Battery",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 136,
+      "panels": [],
+      "repeat": "wind_module",
+      "repeatDirection": "h",
+      "title": "$wind_module",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "velocityms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 55
+      },
+      "id": 199,
+      "interval": "",
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.1.2",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "10m"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "module"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "temperature",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"windstrength\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"last\")",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "title": "Wind",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "max"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "links": [],
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "velocityms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 55
+      },
+      "id": 200,
+      "interval": "",
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.1.2",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_station $tag_module",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "10m"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "module"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "temperature",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"guststrength\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\", \"module\"])\r\n  |> yield(name: \"last\")",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "title": "Gust",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "index": 0,
+                  "text": "N"
+                },
+                "to": 23
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 23,
+                "result": {
+                  "index": 1,
+                  "text": "NNE"
+                },
+                "to": 45
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 45,
+                "result": {
+                  "index": 2,
+                  "text": "NE"
+                },
+                "to": 68
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 68,
+                "result": {
+                  "index": 3,
+                  "text": "ENE"
+                },
+                "to": 90
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 90,
+                "result": {
+                  "index": 4,
+                  "text": "E"
+                },
+                "to": 113
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 113,
+                "result": {
+                  "index": 5,
+                  "text": "ESE"
+                },
+                "to": 135
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 135,
+                "result": {
+                  "index": 6,
+                  "text": "SE"
+                },
+                "to": 158
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 158,
+                "result": {
+                  "index": 7,
+                  "text": "SSE"
+                },
+                "to": 180
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 180,
+                "result": {
+                  "index": 8,
+                  "text": "S"
+                },
+                "to": 203
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 203,
+                "result": {
+                  "index": 9,
+                  "text": "SSW"
+                },
+                "to": 225
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 225,
+                "result": {
+                  "index": 10,
+                  "text": "SW"
+                },
+                "to": 248
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 248,
+                "result": {
+                  "index": 11,
+                  "text": "WSW"
+                },
+                "to": 270
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 270,
+                "result": {
+                  "index": 12,
+                  "text": "W"
+                },
+                "to": 293
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 293,
+                "result": {
+                  "index": 13,
+                  "text": "WNW"
+                },
+                "to": 315
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 315,
+                "result": {
+                  "index": 14,
+                  "text": "NW"
+                },
+                "to": 338
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 338,
+                "result": {
+                  "index": 15,
+                  "text": "NNW"
+                },
+                "to": 360
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "degree"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 55
+      },
+      "hideTimeOverride": true,
+      "id": 202,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Angle$/",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "pressure_trend",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"windangle\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Angle\"})\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "Wind Angle",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "index": 0,
+                  "text": "N"
+                },
+                "to": 23
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 23,
+                "result": {
+                  "index": 1,
+                  "text": "NNE"
+                },
+                "to": 45
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 45,
+                "result": {
+                  "index": 2,
+                  "text": "NE"
+                },
+                "to": 68
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 68,
+                "result": {
+                  "index": 3,
+                  "text": "ENE"
+                },
+                "to": 90
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 90,
+                "result": {
+                  "index": 4,
+                  "text": "E"
+                },
+                "to": 113
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 113,
+                "result": {
+                  "index": 5,
+                  "text": "ESE"
+                },
+                "to": 135
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 135,
+                "result": {
+                  "index": 6,
+                  "text": "SE"
+                },
+                "to": 158
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 158,
+                "result": {
+                  "index": 7,
+                  "text": "SSE"
+                },
+                "to": 180
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 180,
+                "result": {
+                  "index": 8,
+                  "text": "S"
+                },
+                "to": 203
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 203,
+                "result": {
+                  "index": 9,
+                  "text": "SSW"
+                },
+                "to": 225
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 225,
+                "result": {
+                  "index": 10,
+                  "text": "SW"
+                },
+                "to": 248
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 248,
+                "result": {
+                  "index": 11,
+                  "text": "WSW"
+                },
+                "to": 270
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 270,
+                "result": {
+                  "index": 12,
+                  "text": "W"
+                },
+                "to": 293
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 293,
+                "result": {
+                  "index": 13,
+                  "text": "WNW"
+                },
+                "to": 315
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 315,
+                "result": {
+                  "index": 14,
+                  "text": "NW"
+                },
+                "to": 338
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 338,
+                "result": {
+                  "index": 15,
+                  "text": "NNW"
+                },
+                "to": 360
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "degree"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 55
+      },
+      "hideTimeOverride": true,
+      "id": 203,
+      "links": [],
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^Angle$/",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "pressure_trend",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gustangle\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> keep(columns: [\"_value\", \"_time\"])\r\n  |> rename(columns: {_value: \"Angle\"})\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "Gust Angle",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "",
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "-"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "max": 0,
+          "min": -127,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "semi-dark-red",
+                "value": null
+              },
+              {
+                "color": "semi-dark-orange",
+                "value": -86
+              },
+              {
+                "color": "semi-dark-blue",
+                "value": -71
+              },
+              {
+                "color": "rgba(0, 0, 0, 0)",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 20,
+        "y": 55
+      },
+      "id": 167,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {}
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "alias": "",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "rf_status",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rf_status\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> map(fn: (r) => ({r with _value: (float(v: r._value) * -1.0)} ))\r\n  |> yield(name: \"last\")",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              },
+              {
+                "params": [
+                  "*-1"
+                ],
+                "type": "math"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            },
+            {
+              "condition": "AND",
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            }
+          ]
+        }
+      ],
+      "title": "Signal",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "-U6dlh47k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "-"
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#d44a3a",
+                "value": null
+              },
+              {
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 10
+              },
+              {
+                "color": "#299c46",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 22,
+        "y": 55
+      },
+      "id": 168,
+      "links": [],
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {}
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "-U6dlh47k"
+          },
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "station"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "battery_percent",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"netatmo\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"module\"] == \"${wind_module}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"Wind\")\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"battery_percent\")\r\n  |> sort(columns: [\"_time\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> yield(name: \"last\")",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "last"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "module",
+              "operator": "=~",
+              "value": "/^$Module$/"
+            },
+            {
+              "condition": "AND",
+              "key": "station",
+              "operator": "=~",
+              "value": "/^$Station$/"
+            }
+          ]
+        }
+      ],
+      "title": "Battery",
+      "transparent": true,
+      "type": "gauge"
     }
   ],
-  "refresh": "5m",
-  "schemaVersion": 30,
+  "refresh": "",
+  "schemaVersion": 38,
   "style": "dark",
-  "tags": [
-    "influxdb",
-    "netatmo",
-    "weather",
-    "temperature"
-  ],
+  "tags": [],
   "templating": {
     "list": [
       {
-        "allValue": null,
-        "current": {},
-        "datasource": "InfluxDB-Netatmo",
+        "current": {
+          "selected": false,
+          "text": "Zuhause (Wohnzimmer)",
+          "value": "Zuhause (Wohnzimmer)"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "-U6dlh47k"
+        },
         "definition": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"station\",\r\n  predicate: (r) => true\r\n)\r\n",
-        "description": null,
-        "error": null,
         "hide": 0,
-        "includeAll": false,
-        "label": null,
+        "includeAll": true,
+        "label": "Station",
         "multi": false,
-        "name": "Station",
+        "name": "station",
         "options": [],
         "query": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"station\",\r\n  predicate: (r) => true\r\n)\r\n",
         "refresh": 1,
@@ -2208,19 +4169,77 @@
         "useTags": false
       },
       {
-        "allValue": null,
-        "current": {},
-        "datasource": "InfluxDB-Netatmo",
-        "definition": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => r.station == \"${Station}\"\r\n)\r\n",
-        "description": null,
-        "error": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "-U6dlh47k"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Temperature\")\r\n)\r\n",
         "hide": 0,
         "includeAll": true,
-        "label": null,
+        "label": "Temperature Module",
         "multi": false,
-        "name": "Module",
+        "name": "temp_module",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => r.station == \"${Station}\"\r\n)\r\n",
+        "query": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Temperature\")\r\n)\r\n",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "-U6dlh47k"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Rain\")\r\n)\r\n",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Rain Module",
+        "multi": false,
+        "name": "rain_module",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Rain\")\r\n)\r\n",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "-U6dlh47k"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Wind\")\r\n)\r\n",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Wind Module",
+        "multi": false,
+        "name": "wind_module",
+        "options": [],
+        "query": "import \"influxdata/influxdb/schema\"\r\n\r\nschema.tagValues(\r\n  bucket: \"netatmo\",\r\n  tag: \"module\",\r\n  predicate: (r) => (r.station == \"${station}\" and r.data_type == \"Wind\")\r\n)\r\n",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2263,6 +4282,7 @@
   },
   "timezone": "",
   "title": "Netatmo Weather Station",
-  "uid": "Lt1pl24nz",
-  "version": 17
+  "uid": "A1PR_Kenk",
+  "version": 13,
+  "weekStart": ""
 }
