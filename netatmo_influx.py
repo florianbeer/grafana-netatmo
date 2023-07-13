@@ -6,15 +6,12 @@ from influxdb import InfluxDBClient
 
 CLIENT_ID = ''
 CLIENT_SECRET = ''
-USERNAME = ''
-PASSWORD = ''
+REFRESH_TOKEN = ''
 
 authorization = lnetatmo.ClientAuth(
         clientId=CLIENT_ID,
         clientSecret=CLIENT_SECRET,
-        username=USERNAME,
-        password=PASSWORD,
-        scope='read_station'
+        refreshToken=REFRESH_TOKEN,
         )
 
 weatherData = lnetatmo.WeatherStationData(authorization)
