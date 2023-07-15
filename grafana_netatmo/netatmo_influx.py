@@ -13,7 +13,7 @@ from datetime import datetime
 from requests import ConnectionError
 from influxdb_client import InfluxDBClient, WritePrecision
 from influxdb_client.client.exceptions import InfluxDBError
-from pyatmo import ClientAuth, WeatherStationData, ApiError
+from pyatmo import NetatmoOAuth2, WeatherStationData, ApiError
 
 
 class BatchingCallback(object):
@@ -99,8 +99,7 @@ if __name__ == "__main__":
     loglevel = None
     client_id = None
     client_secret = None
-    netatmo_username = None
-    netatmo_password = None
+    refresh_token = None
     influx_host = None
     influx_port = None
     influx_bucket = None
@@ -123,8 +122,7 @@ if __name__ == "__main__":
     if "netatmo" in config:
         client_id = config["netatmo"].get("client_id", None)
         client_secret = config["netatmo"].get("client_secret", None)
-        netatmo_username = config["netatmo"].get("netatmo_username", None)
-        netatmo_password = config["netatmo"].get("netatmo_password", None)
+        refresh_token = config["netatmo"].get("refresh_token", None)
 
     if "influx" in config:
         influx_host = config["influx"].get("influx_host", "localhost")
@@ -137,8 +135,7 @@ if __name__ == "__main__":
     # Environment Variables takes precedence over config if set
     client_id = get_environ("NETATMO_CLIENT_ID", client_id)
     client_secret = get_environ("NETATMO_CLIENT_SECRET", client_secret)
-    netatmo_username = get_environ("NETATMO_USERNAME", netatmo_username)
-    netatmo_password = get_environ("NETATMO_PASSWORD", netatmo_password)
+    refresh_token = get_environ("NETATMO_REFRESH_TOKEN", refresh_token)
     influx_host = get_environ("INFLUX_HOST", influx_host)
     influx_port = get_environ("INFLUX_PORT", influx_port)
     influx_bucket = get_environ("INFLUX_BUCKET", influx_bucket)
@@ -156,13 +153,13 @@ if __name__ == "__main__":
     logger.info("Starting Netatmo Crawler...")
     while running:
         try:
-            authorization = ClientAuth(
+            authorization = NetatmoOAuth2(
                 client_id=client_id,
                 client_secret=client_secret,
-                username=netatmo_username,
-                password=netatmo_password,
-                scope="read_station",
             )
+            authorization.extra["refresh_token"] = refresh_token
+            authorization.refresh_tokens()
+
         except ApiError:
             logger.error("No credentials supplied. No Netatmo Account available.")
             exit(1)
