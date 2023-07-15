@@ -5,8 +5,7 @@ loglevel = INFO
 [netatmo]
 client_id =
 client_secret =
-netatmo_username =
-netatmo_password =
+refresh_token =
 
 [influx]
 influx_host =
