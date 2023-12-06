@@ -14,6 +14,8 @@ from requests import ConnectionError
 from influxdb_client import InfluxDBClient, WritePrecision
 from influxdb_client.client.exceptions import InfluxDBError
 from pyatmo import NetatmoOAuth2, WeatherStationData, ApiError
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
+from typing import Tuple
 
 
 class BatchingCallback(object):
@@ -93,6 +95,28 @@ def shutdown(_signal):
     running = False
 
 
+def get_authorization() -> Tuple[NetatmoOAuth2, str]:
+    while True:
+        try:
+            auth = NetatmoOAuth2(
+                client_id=client_id,
+                client_secret=client_secret,
+            )
+            auth.extra["refresh_token"] = refresh_token
+            result = auth.refresh_tokens()
+
+            return auth, result.get("refresh_token")
+        except ApiError:
+            logger.error("No credentials supplied. No Netatmo Account available.")
+            exit(1)
+        except ConnectionError:
+            logger.error(f"Can't connect to Netatmo API. Retrying in {interval} second(s)...")
+            pass
+        except InvalidGrantError:
+            logger.error(f"Refresh Token expired!")
+            exit(1)
+
+
 if __name__ == "__main__":
     running = True
     interval = None
@@ -152,100 +176,86 @@ if __name__ == "__main__":
 
     logger.info("Starting Netatmo Crawler...")
     while running:
+        authorization, refresh_token = get_authorization()
         try:
-            authorization = NetatmoOAuth2(
-                client_id=client_id,
-                client_secret=client_secret,
-            )
-            authorization.extra["refresh_token"] = refresh_token
-            authorization.refresh_tokens()
+            weatherData = WeatherStationData(authorization)
+            weatherData.update()
 
-        except ApiError:
-            logger.error("No credentials supplied. No Netatmo Account available.")
-            exit(1)
-        except ConnectionError:
-            logger.error(f"Can't connect to Netatmo API. Retrying in {interval} second(s)...")
-            pass
-        else:
-            try:
-                weatherData = WeatherStationData(authorization)
-                weatherData.update()
-
-                with InfluxDBClient(
+            with InfluxDBClient(
                     url=f"{influx_protocol}://{influx_host}:{influx_port}",
                     token=influx_token,
                     org=influx_org,
                     debug=influx_debug,
-                ) as _client:
-                    with _client.write_api(
+            ) as _client:
+                with _client.write_api(
                         success_callback=influx_callback.success,
                         error_callback=influx_callback.error,
                         retry_callback=influx_callback.retry,
-                    ) as _write_client:
-                        for station_id in weatherData.stations:
-                            station_data = []
-                            module_data = []
+                ) as _write_client:
+                    for station_id in weatherData.stations:
+                        station_data = []
+                        module_data = []
 
-                            station = weatherData.get_station(station_id)
-                            station_name = station["station_name"]
-                            station_module_name = station["module_name"]
+                        station = weatherData.get_station(station_id)
+                        station_name = station["station_name"]
+                        station_module_name = station["module_name"]
 
-                            altitude = station["place"]["altitude"]
-                            country = station["place"]["country"]
-                            timezone = station["place"]["timezone"]
-                            longitude = station["place"]["location"][0]
-                            latitude = station["place"]["location"][1]
+                        altitude = station["place"]["altitude"]
+                        country = station["place"]["country"]
+                        timezone = station["place"]["timezone"]
+                        longitude = station["place"]["location"][0]
+                        latitude = station["place"]["location"][1]
 
-                            for module_id, moduleData in weatherData.get_last_data(station_id).items():
-                                module = weatherData.get_module(module_id)
-                                module_name = module["module_name"] if module else station["module_name"]
-                                module_data_type = module["data_type"][0] if module else station["data_type"][0]
+                        for module_id, moduleData in weatherData.get_last_data(station_id).items():
+                            module = weatherData.get_module(module_id)
+                            module_name = module["module_name"] if module else station["module_name"]
+                            module_data_type = module["data_type"][0] if module else station["data_type"][0]
 
-                                if not module:
-                                    for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
-                                        value = eval(measurement)
-                                        if type(value) == int:
-                                            value = float(value)
-                                        station_data.append(
-                                            {
-                                                "measurement": measurement,
-                                                "tags": {"station": station_name, "module": module_name},
-                                                "fields": {"value": value},
-                                                "time": moduleData["When"],
-                                            }
-                                        )
+                            if not module:
+                                for measurement in ["altitude", "country", "longitude", "latitude", "timezone"]:
+                                    value = eval(measurement)
+                                    if type(value) == int:
+                                        value = float(value)
+                                    station_data.append(
+                                        {
+                                            "measurement": measurement,
+                                            "tags": {"station": station_name, "module": module_name},
+                                            "fields": {"value": value},
+                                            "time": moduleData["When"],
+                                        }
+                                    )
 
-                                for sensor, value in moduleData.items():
-                                    if sensor.lower() == "wifi_status":
-                                        sensor = "rf_status"
-                                    if sensor.lower() != "when":
-                                        if type(value) == int:
-                                            value = float(value)
-                                        module_data.append(
-                                            {
-                                                "measurement": sensor.lower(),
-                                                "tags": {
-                                                    "station": station_name,
-                                                    "module": module_name,
-                                                    "data_type": module_data_type,
-                                                },
-                                                "fields": {"value": value},
-                                                "time": moduleData["When"],
-                                            }
-                                        )
+                            for sensor, value in moduleData.items():
+                                if sensor.lower() == "wifi_status":
+                                    sensor = "rf_status"
+                                if sensor.lower() != "when":
+                                    if type(value) == int:
+                                        value = float(value)
+                                    module_data.append(
+                                        {
+                                            "measurement": sensor.lower(),
+                                            "tags": {
+                                                "station": station_name,
+                                                "module": module_name,
+                                                "data_type": module_data_type,
+                                            },
+                                            "fields": {"value": value},
+                                            "time": moduleData["When"],
+                                        }
+                                    )
 
-                            now = datetime.utcnow()
-                            strtime = now.strftime("%Y-%m-%d %H:%M:%S")
+                        now = datetime.utcnow()
+                        strtime = now.strftime("%Y-%m-%d %H:%M:%S")
 
-                            _write_client.write(
-                                influx_bucket, influx_org, station_data, write_precision=WritePrecision.S
-                            )
+                        _write_client.write(
+                            influx_bucket, influx_org, station_data, write_precision=WritePrecision.S
+                        )
 
-                            _write_client.write(
-                                influx_bucket, influx_org, module_data, write_precision=WritePrecision.S
-                            )
-            except ApiError as error:
-                logger.error(error)
-                pass
+                        _write_client.write(
+                            influx_bucket, influx_org, module_data, write_precision=WritePrecision.S
+                        )
+        except ApiError as error:
+            logger.error(error)
+            pass
 
         sleep(interval)
