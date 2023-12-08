@@ -4,15 +4,7 @@
 import lnetatmo
 from influxdb import InfluxDBClient
 
-CLIENT_ID = ''
-CLIENT_SECRET = ''
-REFRESH_TOKEN = ''
-
-authorization = lnetatmo.ClientAuth(
-        clientId=CLIENT_ID,
-        clientSecret=CLIENT_SECRET,
-        refreshToken=REFRESH_TOKEN,
-        )
+authorization = lnetatmo.ClientAuth()
 
 weatherData = lnetatmo.WeatherStationData(authorization)
 
