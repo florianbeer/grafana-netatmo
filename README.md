@@ -7,7 +7,15 @@ https://grafana.com/grafana/dashboards/12378
 
 ## Installation
 
-* Create a [Netatmo developer account](https://dev.netatmo.com/apidocumentation) and fill in your CLIENT_ID, CLIENT_SECRET and REFRESH_TOKEN in the script.
+* Create a [Netatmo developer account](https://dev.netatmo.com/apidocumentation)
+* Create the file `~/.netatmo.credentials` and make it writable
+```
+{
+  "CLIENT_ID" : "xxx",
+  "CLIENT_SECRET" : "xxx",
+  "REFRESH_TOKEN" : "xxx"
+}
+```
 * This script assumes you have InfluxDB running on the same machine as this script and it uses no authentication.
 * Create a cron job to run the script periodically e.g.
 
