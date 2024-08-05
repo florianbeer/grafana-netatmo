@@ -3,15 +3,36 @@
 
 import lnetatmo
 from influxdb import InfluxDBClient
+from os.path import expanduser, exists
+import json
+
+#
+#  custom influx config file
+#
+#   {
+#     "INFLUX_HOST" : "",
+#     "INFLUX_PORT" : "",
+#   }
+INFLUXCONFIG = "~/.netatmo.influxdb"
+
+if (INFLUXCONFIG):
+  influxconfigFile = expanduser(INFLUXCONFIG)
+  with open(influxconfigFile, "r") as f:
+      influxconfig = {k.upper():v for k,v in json.loads(f.read()).items()}
+
+  #print(influxconfig)
+  client = InfluxDBClient(host=influxconfig["INFLUX_HOST"], port=influxconfig["INFLUX_PORT"])
+else:
+  #print("default")
+  client = InfluxDBClient()
+  if {'name': 'netatmo'} not in client.get_list_database():
+    client.create_database('netatmo')
 
 authorization = lnetatmo.ClientAuth()
 
 weatherData = lnetatmo.WeatherStationData(authorization)
 
-client = InfluxDBClient()
-if {'name': 'netatmo'} not in client.get_list_database():
-    client.create_database('netatmo')
-
+#print(weatherData.stationByName())
 for station in weatherData.stations:
     station_data = []
     module_data = []
