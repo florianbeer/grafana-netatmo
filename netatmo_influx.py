@@ -4,9 +4,13 @@
 import lnetatmo
 from influxdb import InfluxDBClient
 
-authorization = lnetatmo.ClientAuth()
-
-weatherData = lnetatmo.WeatherStationData(authorization)
+try:
+    authorization = lnetatmo.ClientAuth()
+    weatherData = lnetatmo.WeatherStationData(authorization)
+except Exception as e:
+    print("Netatmo authentication failed: {}".format(e))
+    print("Check ~/.netatmo.credentials and update REFRESH_TOKEN if it has expired.")
+    raise SystemExit(1)
 
 client = InfluxDBClient()
 if {'name': 'netatmo'} not in client.get_list_database():
